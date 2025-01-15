@@ -1,23 +1,19 @@
 import cv2
+import serial
 import threading
 import speech_recognition_module  # Имя второго файла без .py
-from gpiozero import Servo
 from time import sleep
 
-# Параметры сервопривода
-servo = Servo(17)  # Замените 17 на ваш GPIO-пин
-servo_angle = 0  # Текущий угол сервопривода (от -1 до 1)
+# Подключение к Arduino через последовательный порт
+arduino = serial.Serial('/dev/cu.usbserial-10', 9600)
 
-# Преобразование угла в диапазоне 0-180 в значение для gpiozero (-1 до 1)
-def angle_to_position(angle):
-    return angle / 90 - 1
-
-# Устанавливаем начальное положение в центре (90 градусов)
-servo.value = angle_to_position(90)
+# Отправка угла в Arduino
+def send_angle_to_arduino(angle):
+    arduino.write(f"{angle}\n".encode())  # Отправляем угол в Arduino
 
 def run_face_detection():
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     if not cap.isOpened():
         print("Не удалось открыть камеру. Убедитесь, что она подключена.")
@@ -39,24 +35,30 @@ def run_face_detection():
             face_detected = True
             x, y, w, h = faces[0]  # Берем первое обнаруженное лицо
             face_center_x = x + w // 2
+            face_center_y = y + h // 2
 
             frame_center_x = frame.shape[1] // 2
-            if face_center_x < frame_center_x - 30:  # Лицо слева
-                if current_angle > 0:
-                    current_angle -= 5  # Поворачиваем влево
-                    current_angle = max(0, current_angle)
-                    servo.value = angle_to_position(current_angle)
-            elif face_center_x > frame_center_x + 30:  # Лицо справа
-                if current_angle < 180:
-                    current_angle += 5  # Поворачиваем вправо
-                    current_angle = min(180, current_angle)
-                    servo.value = angle_to_position(current_angle)
+            frame_center_y = frame.shape[0] // 2
+
+            # Плавное движение сервопривода в зависимости от положения лица
+            angle_delta_x = face_center_x - frame_center_x
+            angle_delta_y = face_center_y - frame_center_y
+
+            # Угол на основе горизонтальной оси
+            if abs(angle_delta_x) > 30:
+                current_angle += angle_delta_x // 10  # Плавное изменение угла
+                current_angle = max(0, min(180, current_angle))  # Ограничиваем угол от 0 до 180
+
+            # Плавно отправляем угол на Arduino
+            send_angle_to_arduino(current_angle)
+
         else:
             if face_detected:
                 face_detected = False
                 current_angle = 90  # Возвращаем в центр
-                servo.value = angle_to_position(current_angle)
+                send_angle_to_arduino(current_angle)
 
+        # Отображаем лицо на экране
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
