@@ -18,5 +18,5 @@ python main.py
 
 4. Запустить проект (Raspberry pi):
 ```
-python main.py
+python main_raspberry.py
 ```
