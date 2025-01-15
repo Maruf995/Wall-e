@@ -52,8 +52,8 @@ def main():
         answer = response.choices[0].message.content
         print(answer)
         tts = gTTS(text=answer, lang='ru', slow=False)
-        tts.save("output.mp3")
-        playsound("output.mp3")
+        tts.save("audio/output.mp3")
+        playsound("audio/output.mp3")
 
 if __name__ == "__main__":
     main()
