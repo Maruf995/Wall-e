@@ -11,7 +11,12 @@ git clone https://github.com/Maruf995/Wall-e.git
 pip install -r requirements.txt
 ```
 
-3. Запустить проект:
+3. Запустить проект (Компьютер):
+```
+python main.py
+```
+
+4. Запустить проект (Raspberry pi):
 ```
 python main.py
 ```
