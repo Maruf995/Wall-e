@@ -1,9 +1,6 @@
 import cv2
 import serial
-import threading
-import speech_recognition_module  # Имя второго файла без .py
 from time import sleep
-
 
 # Подключение к Arduino через последовательный порт
 arduino = serial.Serial('/dev/cu.usbserial-10', 9600)
@@ -71,5 +68,4 @@ def run_face_detection():
         cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    threading.Thread(target=speech_recognition_module.main).start()
     run_face_detection()
