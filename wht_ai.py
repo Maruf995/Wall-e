@@ -3,7 +3,7 @@ import serial
 from time import sleep
 
 # Подключение к Arduino через последовательный порт
-arduino = serial.Serial('/dev/cu.usbserial-10', 9600)
+arduino = serial.Serial('/dev/cu.usbserial-120', 9600)
 
 # Отправка угла в Arduino
 def send_angle_to_arduino(angle):
@@ -11,7 +11,7 @@ def send_angle_to_arduino(angle):
 
 def run_face_detection():
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     if not cap.isOpened():
         print("Не удалось открыть камеру. Убедитесь, что она подключена.")
@@ -42,7 +42,7 @@ def run_face_detection():
 
                 # Угол на основе горизонтальной оси
                 if abs(angle_delta_x) > 30:
-                    current_angle += angle_delta_x // 30  # Плавное изменение угла
+                    current_angle += angle_delta_x // 40  # Плавное изменение угла
                     current_angle = max(0, min(180, current_angle))  # Ограничиваем угол от 0 до 180
 
                 # Плавно отправляем угол на Arduino

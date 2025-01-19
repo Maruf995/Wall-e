@@ -1,10 +1,30 @@
 import serial
-from time import sleep
+import time
 
-arduino = serial.Serial('/dev/cu.usbserial-10', 9600)
+# Настройки последовательного порта
+SERIAL_PORT = '/dev/cu.usbserial-120'  # Укажите ваш порт (например, COM3 для Windows)
+BAUD_RATE = 9600
 
-while True:
-    arduino.write(b'180\n')  # Отправить угол 90
-    sleep(1)
-    arduino.write(b'0\n')  # Отправить угол 90
-    sleep(1)
+# Создаём подключение к последовательному порту
+arduino = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+time.sleep(2)  # Даем Arduino время на инициализацию
+
+def rotate_servo(arduino, pin):
+    """Поворот сервопривода."""
+    try:
+        arduino.write(f"ROTATE_{pin}\n".encode())
+        time.sleep(1)
+        arduino.write(f"CENTER_{pin}\n".encode())
+        print(f"Серво на пине {pin} повернулся!")
+    except Exception as e:
+        print(f"Ошибка управления серво: {e}")
+
+
+def main():
+    for i in range(3):
+        if arduino:
+            time.sleep(3)
+            rotate_servo(arduino, 9)
+
+if __name__ == "__main__":
+    main()
